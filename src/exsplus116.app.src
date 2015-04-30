@@ -1,0 +1,8 @@
+{application, exsplus116, [
+    {description, "Xorshift116plus PRNG for Erlang"},
+    {vsn, "0.3.0"},
+    {env, []},
+    {registered, []},
+    {modules, [exsplus116]},
+    {applications, [kernel, stdlib]}
+]}.
