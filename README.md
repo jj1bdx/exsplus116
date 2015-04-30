@@ -18,7 +18,7 @@ MIT License.
 * This code will run on 18.0.
 
 A preliminary test shows the `exsplus116` functions takes *nearly the same*
-execution time than twice of `random` module on a x86\_64 or amd64 architecture
+execution time as `random` module on a x86\_64 or amd64 architecture
 environment.
 
 ## Make options (of erlang.mk)
