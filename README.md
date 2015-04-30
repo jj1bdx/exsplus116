@@ -6,6 +6,6 @@ See [emprng](https://github.com/jj1bdx/emprng/) for the further details.
 
 ## Authors
 
-Algorithm by Sebastiano Vigna, and he made it public domain.
+Algorithm by Sebastiano Vigna.
 
 Programmed by Kenji Rikitake and Dan Gudmundsson.
