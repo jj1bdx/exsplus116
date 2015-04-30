@@ -73,7 +73,7 @@ next([S1|S0]) ->
 %% @doc Set the default seed value to xorshift116plus state
 %% in the process directory (Compatible with random:seed0/0).
 
-seed0() -> [228356865352967669|276031685508542558].
+seed0() -> [287716055029699555|144656421928717457].
 
 %% @doc Set the default seed value to xorshift116plus state
 %% in the process directory %% (Compatible with random:seed/1).
@@ -91,7 +91,7 @@ seed() ->
 -spec seed_put(state()) -> 'undefined' | state().
 
 seed_put(R) ->
-    put(exsplus_seed, R).
+    put(exsplus116_seed, R).
 
 %% @doc Set the seed value to xorshift116plus state in the process directory.
 %% with the given three-element tuple of unsigned 32-bit integers
@@ -138,12 +138,12 @@ uniform_s(R0) ->
 %% (Compatible with random:uniform/1)
 
 uniform() ->
-    R = case get(exsplus_seed) of
+    R = case get(exsplus116_seed) of
         undefined -> seed0();
         _R -> _R
     end,
     {V, R2} = uniform_s(R),
-    put(exsplus_seed, R2),
+    put(exsplus116_seed, R2),
     V.
 
 %% @doc Generate integer from given xorshift116plus internal state.
@@ -162,11 +162,11 @@ uniform_s(Max, R) when is_integer(Max), Max >= 1 ->
 -spec uniform(pos_integer()) -> pos_integer().
 
 uniform(N) when is_integer(N), N >= 1 ->
-    R = case get(exsplus_seed) of
+    R = case get(exsplus116_seed) of
         undefined -> seed0();
         _R -> _R
     end,
     {V, R1} = uniform_s(N, R),
-    put(exsplus_seed, R1),
+    put(exsplus116_seed, R1),
     V.
 
