@@ -23,10 +23,28 @@
 -module(exsplus116_SUITE).
 -include_lib("common_test/include/ct.hrl").
 -export([all/0]).
--export([testloop_test/1]).
- 
+-export([basic_test/1, testloop_test/1]).
+
 all() ->
-    [testloop_test].
+    [basic_test,
+     testloop_test].
+
+basic_test(_Config) ->
+    Seed0 = exsplus116:seed0(),
+    {F0,St0} = exsplus116:uniform_s(Seed0), % test that seed is usable
+    true = is_float(F0),
+    {F1,_} = exsplus116:uniform_s(St0), % test that new state is usable
+    true = is_float(F1),
+    Seed0 = exsplus116:seed(), % not previously in process dict
+    Seed0 = exsplus116:seed(), % already existing in process dict
+    Seed0 = exsplus116:seed(123,456,789), % returns the old state
+    Seed1 = exsplus116:seed(123,456,789), % returns the changed state
+    Seed1 = exsplus116:seed(123,456,789), % idempotent
+    Seed1 = exsplus116:seed({123,456,789}), % same result with 1-ary version
+    true = (Seed0 =/= Seed1), % verify that the states differ
+    {F2,_} = exsplus116:uniform_s(Seed1), % test that new state is usable
+    true = is_float(F2),
+    ok.
 
 -spec testloop(pos_integer()) -> list().
 
