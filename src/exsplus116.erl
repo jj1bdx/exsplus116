@@ -44,46 +44,42 @@
         uint58/0
     ]).
 
-%% @type uint58(). 58bit unsigned integer type.
 
--type uint58() :: 0..16#03ffffffffffffff.
+-include("exsplus116.hrl").
 
-%% @type state(). Internal state data type for exsplus116.
-%% Internally represented as an [S0|S1] improper list,
-%% of the 116bit seed.
-
--type state() :: nonempty_improper_list(uint58(), uint58()).
-
--define(UINT58MASK, 16#03ffffffffffffff).
 
 %% @doc Generate 58bit unsigned integer from the xorshift116plus internal
 %% state and compute next state. Has no side effects.
 
 -spec next(state()) -> {uint58(), state()}.
 
-next([S1|S0]) ->
+next(?state(S1, S0)) ->
     %% Note: members s0 and s1 are swapped here
     S11 = (S1 bxor (S1 bsl 24)) band ?UINT58MASK,
     S12 = S11 bxor S0 bxor (S11 bsr 11) bxor (S0 bsr 41),
-    {(S0 + S12) band ?UINT58MASK, [S0|S12]}.
+    {(S0 + S12) band ?UINT58MASK, ?state(S0, S12)}.
+
+
+%% @doc Set the default seed value to xorshift116plus state in the process
+%% directory. (Compatible with @{link random:seed0/0}.)
 
 -spec seed0() -> state().
 
-%% @doc Set the default seed value to xorshift116plus state
-%% in the process directory (Compatible with random:seed0/0).
+seed0() ->
+    ?state(287716055029699555, 144656421928717457).
 
-seed0() -> [287716055029699555|144656421928717457].
 
-%% @doc Set the default seed value to xorshift116plus state
-%% in the process directory %% (Compatible with random:seed/1).
+%% @doc Set the default seed value to xorshift116plus state in the process
+%% directory. (Compatible with {@link random:seed/1}.)
 
 -spec seed() -> state().
 
 seed() ->
     case seed_put(seed0()) of
         undefined -> seed0();
-        [_S0|_S1] = R -> R
+        ?state(_S0, _S1) = R -> R
     end.
+
 
 %% @doc Put the seed, or internal state, into the process dictionary.
 
@@ -92,49 +88,48 @@ seed() ->
 seed_put(R) ->
     put(exsplus116_seed, R).
 
-%% @doc Set the seed value to xorshift116plus state in the process directory.
-%% with the given three-element tuple of unsigned 32-bit integers
-%% (Compatible with random:seed/1).
+
+%% @doc Set the seed value to xorshift116plus state in the process directory
+%% with the given three-element tuple of unsigned 32-bit integers.
+%% (Compatible with {@link random:seed/1}.)
 
 -spec seed({integer(), integer(), integer()}) -> 'undefined' | state().
 
 seed({A1, A2, A3}) ->
     seed(A1, A2, A3).
 
+
 %% @doc Set the seed value to xorshift116plus state in the process directory
-%% with the given three unsigned 32-bit integer arguments
-%% (Compatible with random:seed/3).
-%% Multiplicands here: three 32-bit primes
+%% with the given three unsigned 32-bit integer arguments. (Compatible with
+%% {@link random:seed/3}.) Multiplicands here: three 32-bit primes.
 
 -spec seed(integer(), integer(), integer()) -> 'undefined' | state().
 
 seed(A1, A2, A3) ->
-    {_, R1} = next(
-               [(((A1 * 4294967197) + 1) band ?UINT58MASK) |
-                   (((A2 * 4294967231) + 1) band ?UINT58MASK)]),
-    {_, R2} = next(
-               [(((A3 * 4294967279) + 1) band ?UINT58MASK) |
-                   tl(R1)]),
+    {_, ?state(_S0, S1)} =
+        next(?state((((A1 * 4294967197) + 1) band ?UINT58MASK),
+                    (((A2 * 4294967231) + 1) band ?UINT58MASK))),
+    {_, R2} =
+        next(?state((((A3 * 4294967279) + 1) band ?UINT58MASK),
+                    S1)),
     seed_put(R2).
 
-%% @doc Generate float from
-%% given xorshift116plus internal state.
-%% (Note: 0.0 &lt; result &lt; 1.0)
-%% (Compatible with random:uniform_s/1)
 
--spec uniform_s(state()) -> {float(), state()}.
+%% @doc Generate float from given xorshift116plus internal state. (Note:
+%% `0.0 < Result < 1.0'.) (Compatible with {@link random:uniform_s/1}.)
+
+-spec uniform_s(state()) -> {Result::float(), state()}.
 
 uniform_s(R0) ->
     {I, R1} = next(R0),
     {I / (?UINT58MASK + 1), R1}.
 
--spec uniform() -> float().
 
-%% @doc Generate float
-%% given xorshift116plus internal state
-%% in the process dictionary.
-%% (Note: 0.0 =&lt; result &lt; 1.0)
-%% (Compatible with random:uniform/1)
+%% @doc Generate float given xorshift116plus internal state in the process
+%% dictionary. (Note: `0.0 =< Result < 1.0'.) (Compatible with {@link
+%% random:uniform/1}.)
+
+-spec uniform() -> Result::float().
 
 uniform() ->
     R = case get(exsplus116_seed) of
@@ -145,20 +140,22 @@ uniform() ->
     put(exsplus116_seed, R2),
     V.
 
+
 %% @doc Generate integer from given xorshift116plus internal state.
-%% (Note: 0 =&lt; result &lt; MAX (given positive integer))
--spec uniform_s(pos_integer(), state()) -> {pos_integer(), state()}.
+%% (Note: `0 =< Result < MAX' (given positive integer))
+
+-spec uniform_s(pos_integer(), state()) -> {Result::pos_integer(), state()}.
 
 uniform_s(Max, R) when is_integer(Max), Max >= 1 ->
     {V, R1} = next(R),
     {(V rem Max) + 1, R1}.
 
-%% @doc Generate integer from the given xorshift116plus internal state
-%% in the process dictionary.
-%% (Note: 1 =&lt; result =&lt; N (given positive integer))
-%% (compatible with random:uniform/1)
 
--spec uniform(pos_integer()) -> pos_integer().
+%% @doc Generate integer from the given xorshift116plus internal state in
+%% the process dictionary. (Note: `1 =< Result =< N' (given positive
+%% integer).) (Compatible with {@link random:uniform/1}.)
+
+-spec uniform(pos_integer()) -> Result::pos_integer().
 
 uniform(N) when is_integer(N), N >= 1 ->
     R = case get(exsplus116_seed) of
@@ -168,4 +165,3 @@ uniform(N) when is_integer(N), N >= 1 ->
     {V, R1} = uniform_s(N, R),
     put(exsplus116_seed, R1),
     V.
-

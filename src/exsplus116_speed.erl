@@ -1,3 +1,5 @@
+%% @private
+%% @end
 %% (MIT License)
 %%
 %% Copyright (c) 2014 Kenji Rikitake. All rights reserved.
