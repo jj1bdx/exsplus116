@@ -56,9 +56,8 @@
 
 -define(UINT58MASK, 16#03ffffffffffffff).
 
-%% @doc Advance xorshift116plus state for one step.
-%% and generate 58bit unsigned integer from
-%% the xorshift116plus internal state.
+%% @doc Generate 58bit unsigned integer from the xorshift116plus internal
+%% state and compute next state. Has no side effects.
 
 -spec next(state()) -> {uint58(), state()}.
 
@@ -111,10 +110,10 @@ seed({A1, A2, A3}) ->
 
 seed(A1, A2, A3) ->
     {_, R1} = next(
-               [(((A1 * 4294967197) + 1) band ?UINT58MASK),
+               [(((A1 * 4294967197) + 1) band ?UINT58MASK) |
                    (((A2 * 4294967231) + 1) band ?UINT58MASK)]),
     {_, R2} = next(
-               [(((A3 * 4294967279) + 1) band ?UINT58MASK),
+               [(((A3 * 4294967279) + 1) band ?UINT58MASK) |
                    tl(R1)]),
     seed_put(R2).
 
