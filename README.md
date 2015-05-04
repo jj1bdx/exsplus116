@@ -41,3 +41,8 @@ environment.
 Algorithm by Sebastiano Vigna.
 
 Programmed by Kenji Rikitake and Dan Gudmundsson.
+
+## Contributors
+
+Richard Carlsson
+
