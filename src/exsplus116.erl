@@ -36,7 +36,8 @@
      uniform/0,
      uniform/1,
      uniform_s/1,
-     uniform_s/2
+     uniform_s/2,
+     jump/1
  ]).
 
 -export_type([
@@ -169,3 +170,29 @@ uniform(N) when is_integer(N), N >= 1 ->
     put(exsplus116_seed, R1),
     V.
 
+%% @doc This is the jump function for the generator. It is equivalent
+%% to 2^64 calls to next(); it can be used to generate 2^52
+%% non-overlapping subsequences for parallel computations.
+
+-define(JUMPCONST, 16#000d174a83e17de2302f8ea6bc32c797).
+-define(JUMPLEN, 116).
+
+-spec jump(state()) -> state().
+
+jump(S) ->
+    jump(S, [0|0], ?JUMPCONST, ?JUMPLEN).
+
+-spec jump(state(), state(), pos_integer(), pos_integer()) -> state().
+
+jump(_S, [AS0|AS1], _J, 0) -> [AS0|AS1];
+jump(S, [AS0|AS1], J, N) ->
+    case (J band 1) of
+        1 ->
+            [S0|S1] = S,
+            {_, NS} = next(S),
+            jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], J bsr 1, N-1);
+    
+        0 ->
+            {_, NS} = next(S),
+            jump(NS, [AS0|AS1], J bsr 1, N-1)
+    end.
