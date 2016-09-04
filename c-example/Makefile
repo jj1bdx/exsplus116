@@ -5,14 +5,20 @@
 CC = clang
 CFLAGS = -O0 -g -Wall
 
-SOURCES = xorshift116plus.c test.c
 OBJECTS = $(SOURCES:.c=.o)
-EXEC = test
+SOURCES = xorshift116plus.c test.c test-jump.c
+TESTOBJECTS = xorshift116plus.c test.c
+TESTEXEC = test
+TESTJUMPOBJECTS = xorshift116plus.c test-jump.c
+TESTJUMPEXEC = test-jump
 
-all: $(OBJECTS) $(EXEC)
+all: $(OBJECTS) $(TESTEXEC) $(TESTJUMPEXEC)
 
-$(EXEC): $(OBJECTS)
-	$(CC) $(LDFLAGS) $(OBJECTS) -o $@
+$(TESTEXEC): $(TESTOBJECTS)
+	$(CC) $(LDFLAGS) $(TESTOBJECTS) -o $@
+
+$(TESTJUMPEXEC): $(TESTJUMPOBJECTS)
+	$(CC) $(LDFLAGS) $(TESTJUMPOBJECTS) -o $@
 
 .c.o:
 	$(CC) $(CFLAGS) -c $< -o $@
