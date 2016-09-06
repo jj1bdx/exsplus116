@@ -184,15 +184,14 @@ jump(S) ->
 
 -spec jump(state(), state(), pos_integer(), pos_integer()) -> state().
 
-jump(_S, [AS0|AS1], _J, 0) -> [AS0|AS1];
+jump(_S, AS, _J, 0) -> AS;
 jump(S, [AS0|AS1], J, N) ->
+    {_, NS} = next(S),
     case (J band 1) of
         1 ->
             [S0|S1] = S,
-            {_, NS} = next(S),
             jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], J bsr 1, N-1);
     
         0 ->
-            {_, NS} = next(S),
             jump(NS, [AS0|AS1], J bsr 1, N-1)
     end.
