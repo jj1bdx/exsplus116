@@ -184,7 +184,7 @@ jump(S) ->
 
 -spec jump(state(), state(), pos_integer(), pos_integer()) -> state().
 
-jump(_S, AS, _J, 0) -> AS;
+jump(_, AS, _, 0) -> AS;
 jump(S, [AS0|AS1], J, N) ->
     {_, NS} = next(S),
     case (J band 1) of
