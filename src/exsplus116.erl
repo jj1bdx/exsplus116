@@ -174,24 +174,31 @@ uniform(N) when is_integer(N), N >= 1 ->
 %% to 2^64 calls to next(); it can be used to generate 2^52
 %% non-overlapping subsequences for parallel computations.
 
--define(JUMPCONST, 16#000d174a83e17de2302f8ea6bc32c797).
--define(JUMPLEN, 116).
+%% -define(JUMPCONST, 16#000d174a83e17de2302f8ea6bc32c797).
+%% split into 58-bit chunks
+-define(JUMPCONSTHEAD, 16#02f8ea6bc32c797).
+-define(JUMPCONSTTAIL, [16#345d2a0f85f788c]).
+-define(JUMPELEMLEN, 58).
 
 -spec jump(state()) -> state().
 
 jump(S) ->
-    jump(S, [0|0], ?JUMPCONST, ?JUMPLEN).
+    jump(S, [0|0], ?JUMPCONSTTAIL, ?JUMPCONSTHEAD, ?JUMPELEMLEN).
 
--spec jump(state(), state(), pos_integer(), pos_integer()) -> state().
+-spec jump(state(), state(),
+    list(pos_integer()), pos_integer(), pos_integer()) -> state().
 
-jump(_, AS, _, 0) -> AS;
-jump(S, [AS0|AS1], J, N) ->
+jump(_, AS, [], _, 0) ->
+    AS;
+jump(S, AS, [H|T], _, 0) ->
+    jump(S, AS, T, H, ?JUMPELEMLEN);
+jump(S, [AS0|AS1], T, H, N) ->
     {_, NS} = next(S),
-    case (J band 1) of
+    case (H band 1) of
         1 ->
             [S0|S1] = S,
-            jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], J bsr 1, N-1);
+            jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], T, H bsr 1, N-1);
     
         0 ->
-            jump(NS, [AS0|AS1], J bsr 1, N-1)
+            jump(NS, [AS0|AS1], T, H bsr 1, N-1)
     end.
