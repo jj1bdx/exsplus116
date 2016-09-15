@@ -1,6 +1,6 @@
 %% (MIT License)
 %%
-%% Copyright (c) 2014 Kenji Rikitake. All rights reserved.
+%% Copyright (c) 2014-2016 Kenji Rikitake.
 %%
 %% Permission is hereby granted, free of charge, to any person obtaining a copy of
 %% this software and associated documentation files (the "Software"), to deal in
@@ -112,12 +112,35 @@ test_speed_orig_uniform(P, Q) ->
     {_, T} = statistics(runtime),
     T.
 
+-spec test_speed_exsplus116_jump_rec1(list(exsplus116:state()), non_neg_integer(), non_neg_integer(), non_neg_integer(), exsplus116:state()) -> 'ok'.
+
+test_speed_exsplus116_jump_rec1(Acc, 0, _, _, _) ->
+    _ = lists:reverse(Acc),
+    ok;
+test_speed_exsplus116_jump_rec1(Acc, X, 0, R, I) ->
+    _ = lists:reverse(Acc),
+    test_speed_exsplus116_jump_rec1([], X - 1, R, R, I);
+test_speed_exsplus116_jump_rec1(Acc, X, Q, R, I) ->
+    I2 = exsplus116:jump(I),
+    test_speed_exsplus116_jump_rec1([I2|Acc], X, Q - 1, R , I2).
+
+-spec test_speed_exsplus116_jump(non_neg_integer(), non_neg_integer()) -> non_neg_integer().
+
+test_speed_exsplus116_jump(P, Q) ->
+    _ = statistics(runtime),
+    I = exsplus116:seed(),
+    ok = test_speed_exsplus116_jump_rec1([], P, Q, Q, I),
+    {_, T} = statistics(runtime),
+    T.
+
 -spec test_speed() -> 'ok'.
 
 test_speed() ->
-    io:format("{orig_uniform, orig_uniform_n, exsplus116_uniform, exsplus116_uniform_n}~n~p~n",
+    io:format("{orig_uniform, orig_uniform_n, exsplus116_uniform, exsplus116_uniform_n, exsplus116_jump}~n~p~n",
               [{test_speed_orig_uniform(100, 10000),
                 test_speed_orig_uniform_n(100, 10000),
                 test_speed_exsplus116_uniform(100, 10000),
-                test_speed_exsplus116_uniform_n(100, 10000)}
+                test_speed_exsplus116_uniform_n(100, 10000),
+                % note: the jump function rounds is 1/100th of the others
+                test_speed_exsplus116_jump(1, 10000)}
               ]).
