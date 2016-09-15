@@ -176,29 +176,31 @@ uniform(N) when is_integer(N), N >= 1 ->
 
 %% -define(JUMPCONST, 16#000d174a83e17de2302f8ea6bc32c797).
 %% split into 58-bit chunks
--define(JUMPCONSTHEAD, 16#02f8ea6bc32c797).
--define(JUMPCONSTTAIL, [16#345d2a0f85f788c]).
+%% and two iterative executions
+
+-define(JUMPCONST1, 16#02f8ea6bc32c797).
+-define(JUMPCONST2, 16#345d2a0f85f788c).
 -define(JUMPELEMLEN, 58).
 
 -spec jump(state()) -> state().
 
 jump(S) ->
-    jump(S, [0|0], ?JUMPCONSTTAIL, ?JUMPCONSTHEAD, ?JUMPELEMLEN).
+    {S1, AS1} = jump(S, [0|0], ?JUMPCONST1, ?JUMPELEMLEN),
+    {_,  AS2} = jump(S1, AS1,  ?JUMPCONST2, ?JUMPELEMLEN),
+    AS2.
 
--spec jump(state(), state(),
-    list(pos_integer()), pos_integer(), pos_integer()) -> state().
+-spec jump(state(), state(), pos_integer(), pos_integer()) ->
+           {state(), state()}.
 
-jump(_, AS, [], _, 0) ->
-    AS;
-jump(S, AS, [H|T], _, 0) ->
-    jump(S, AS, T, H, ?JUMPELEMLEN);
-jump(S, [AS0|AS1], T, H, N) ->
+jump(S, AS, 0, 0) ->
+    {S, AS};
+jump(S, [AS0|AS1], J, N) ->
     {_, NS} = next(S),
-    case (H band 1) of
+    case (J band 1) of
         1 ->
             [S0|S1] = S,
-            jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], T, H bsr 1, N-1);
+            jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], J bsr 1, N-1);
     
         0 ->
-            jump(NS, [AS0|AS1], T, H bsr 1, N-1)
+            jump(NS, [AS0|AS1], J bsr 1, N-1)
     end.
