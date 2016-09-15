@@ -195,7 +195,7 @@ jump(S) ->
 -spec jump(state(), state(), pos_integer(), pos_integer()) ->
            {state(), state()}.
 
-jump(S, AS, 0, 0) ->
+jump(S, AS, _, 0) ->
     {S, AS};
 jump(S, [AS0|AS1], J, N) ->
     {_, NS} = next(S),
