@@ -203,7 +203,6 @@ jump(S, [AS0|AS1], J, N) ->
         1 ->
             [S0|S1] = S,
             jump(NS, [(AS0 bxor S0)|(AS1 bxor S1)], J bsr 1, N-1);
-    
         0 ->
             jump(NS, [AS0|AS1], J bsr 1, N-1)
     end.
