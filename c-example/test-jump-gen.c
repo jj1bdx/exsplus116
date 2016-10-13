@@ -24,7 +24,6 @@ int main(void)
 {
     int i;
     uint64_t r;
-    double d;
 
     s[0] = (uint64_t)12345678ULL;
     s[1] = (uint64_t)12345678ULL;
